@@ -10,6 +10,7 @@ def set_avg_games_played(session):
     result = session.execute(avg_query).scalar()
 
     insert_query = text("""
+        DROP TABLE IF EXISTS avg_games_played;
         CREATE TABLE IF NOT EXISTS avg_games_played (
             avg_games_result FLOAT
         );

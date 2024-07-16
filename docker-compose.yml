@@ -1,0 +1,21 @@
+version: "3"
+services:
+  mlb-data-analyzer:
+    stdin_open: true
+    tty: true
+    environment:
+      - MLB_DATA_USER=$MLB_DATA_USER
+      - MLB_DATA_PW=$MLB_DATA_PW
+      - MLB_DATA_IP=$MLB_DATA_IP
+      - MLB_DC_ENV=$MLB_DC_ENV
+      - MLB_DC_LOG_LVL=$MLB_DC_LOG_LVL
+      - MLB_MQ_URL=$MLB_MQ_URL
+    networks:
+      - mlb-net
+    container_name: mlb-analyzer-back-end
+    image: webguy1979/mlb-data-analyzer:latest
+    restart: on-failure
+networks:
+  mlb-net:
+    external: true
+    name: mlb-net

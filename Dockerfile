@@ -1,6 +1,6 @@
 FROM python:3.12.3-alpine
-WORKDIR /mlb-data-analyzer
 
+WORKDIR /mlb-data-analyzer
 COPY main.py .
 COPY requirements.txt .
 COPY ./services ./services
