@@ -2,7 +2,6 @@ import pika
 import json
 import os
 import functools
-from services.set_avg_games import set_avg_games_played
 from services.set_ops_leaders import set_ops_batting_leaders
 
 
@@ -18,7 +17,6 @@ def consume_message(engine, session, shared_data):
         message_dict = json.loads(message_json)
         print(f"[INFO] Message Received. Status: {message_dict["status"]}")
         if message_dict["status"] == "OK":
-            set_avg_games_played(session)
             set_ops_batting_leaders(engine, session, shared_data)
         else:
             print("[ERROR] Non-OK message consumed.")

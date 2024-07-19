@@ -1,0 +1,45 @@
+name: MLB Data Analyzer CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - run: pip install -r requirements.txt
+
+    - name: Run Integration Test
+      run: coverage run -m unittest discover ./tests
+      env:
+        MLB_DATA_USER: ${{secrets.MLB_DATA_USER}}
+        MLB_DATA_PW: ${{secrets.MLB_DATA_PW}}
+        MLB_DATA_IP: ${{secrets.MLB_DATA_IP}}
+        MLB_DA_ENV: ${{secrets.MLB_DA_ENV}}
+        MLB_DA_LOG_LVL: ${{secrets.MLB_DA_LOG_LVL}}
+        MLB_MQ_URL: ${{secrets.MLB_MQ_URL}}
+
+    - name: Generate Coverage Report
+      if: ${{ always() }}
+      run: coverage report > coverage-report
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage-report
+
+    - name: Create issue on failure
+      if: ${{ failure() }}
+      run: |
+        gh issue create --title "Failure on workflow: ${{ github.workflow }} - ${{ github.sha }}" --body "Failure on Job: ${{ github.job }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
