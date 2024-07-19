@@ -1,0 +1,61 @@
+name: MLB Data Analyzer CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_run:
+    workflows: [MLB Data Analyzer CI]
+    types:
+      - completed
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger workflow
+        run: echo "Triggering the CD workflow"
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - run: pip install -r requirements.txt
+
+    - name: Docker Build and Run container
+      run: |
+        docker build -t mlb-data-collector .
+        sudo docker run -dit -e MLB_DATA_USER=${{secrets.MLB_DATA_USER}} -e MLB_DATA_PW=${{secrets.MLB_DATA_PW}} -e MLB_DATA_IP=${{secrets.MLB_DATA_IP}} -e MLB_DC_ENV=${{secrets.MLB_DA_ENV}} -e MLB_DC_LOG_LVL=${{secrets.MLB_DA_LOG_LVL}} -e MLB_MQ_URL=${{secrets.MLB_MQ_URL}} --name mlb-da mlb-data-analyzer
+
+    - name: Login to Dockerhub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Container
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: webguy1979/mlb-data-analyzer:latest
+
+    - name: Sleep for 10 seconds
+      run: sleep 10s
+      shell: bash
+
+    - name: Deploy to Portainer 3
+      uses: rrennoir/portainer-stack@v2
+      with:
+        portainerUrl: ${{ secrets.PORTAINER_URL }}
+        portainerApiKey: ${{ secrets.PORTAINER_ACCES_TOKEN }}
+        portainerEndpointId: 2
+        stackName: mlb-data-analyzer
+        stackType: 2
+        composeFile: ./docker-compose.yml
