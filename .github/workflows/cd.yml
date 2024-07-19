@@ -31,7 +31,7 @@ jobs:
 
     - name: Docker Build and Run container
       run: |
-        docker build -t mlb-data-collector .
+        docker build -t mlb-data-analyzer .
         sudo docker run -dit -e MLB_DATA_USER=${{secrets.MLB_DATA_USER}} -e MLB_DATA_PW=${{secrets.MLB_DATA_PW}} -e MLB_DATA_IP=${{secrets.MLB_DATA_IP}} -e MLB_DC_ENV=${{secrets.MLB_DA_ENV}} -e MLB_DC_LOG_LVL=${{secrets.MLB_DA_LOG_LVL}} -e MLB_MQ_URL=${{secrets.MLB_MQ_URL}} --name mlb-da mlb-data-analyzer
 
     - name: Login to Dockerhub
